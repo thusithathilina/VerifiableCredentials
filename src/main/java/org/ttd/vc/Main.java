@@ -28,7 +28,7 @@ public class Main {
                 .build();
         var dateTime = LocalDateTime.now();
         CredentialMetaData credentialMetaData = new CredentialMetaData.Builder()
-                .id("1234567890")
+                .id("vc12345")
                 .issuer("MonashUniversity")
                 .additionalType("MonashCredential")
                 .issuanceDate(dateTime)
@@ -41,8 +41,9 @@ public class Main {
                 "sphere");
         keyPairGenerator.initialize(256, new FixedSecureRandom(keyBytesForSender));
         KeyPair keyPair = keyPairGenerator.generateKeyPair();
-        Proof proof = new Ed25519Signature2020(dateTime, credential, credentialMetaData, URI.create("key"),
+        Proof proof = new Ed25519Signature2020(dateTime, credential, credentialMetaData, URI.create("linkToPublicKey"),
                 "assertion", keyPair.getPrivate());
+
         VerifiableCredential verifiableCredential = new VerifiableCredential.Builder()
                 .credential(credential)
                 .metadata(credentialMetaData)
