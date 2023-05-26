@@ -60,6 +60,9 @@ public class Ed25519Signature2020 implements Proof {
         JsonObject signingContent = new JsonObject();
         signingContent.add("metadata", VCUtil.gson.toJsonTree(credentialMetaData));
         signingContent.add("credential", credential.toJson());
+        JsonObject proofJson = VCUtil.gson.toJsonTree(this).getAsJsonObject();
+        proofJson.remove("proofValue");
+        signingContent.add("proof", proofJson);
         String encodedString = new JsonCanonicalizer(signingContent.toString()).getEncodedString();
 
         Signature signature = Signature.getInstance("Ed25519");
