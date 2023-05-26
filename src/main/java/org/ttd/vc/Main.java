@@ -21,10 +21,9 @@ public class Main {
         credentialSubject.addClaim("name", "Thusitha Dayaratne");
         credentialSubject.addClaim("job", "Research Fellow");
         credentialSubject.addClaim("university", "Monash University");
-        credentialSubject.addClaim("id", "01128904");
+        credentialSubject.addClaim("id", "0123456789");
 
         Credential credential = new Credential.Builder()
-                .credentialSubject(credentialSubject)
                 .credentialSubject(credentialSubject)
                 .build();
         var dateTime = LocalDateTime.now();
@@ -47,7 +46,6 @@ public class Main {
         VerifiableCredential verifiableCredential = new VerifiableCredential.Builder()
                 .credential(credential)
                 .metadata(credentialMetaData)
-                .proof(proof)
                 .proof(proof)
                 .build();
         JsonObject jsonRepresentation = VCUtil.getJsonRepresentation(verifiableCredential);

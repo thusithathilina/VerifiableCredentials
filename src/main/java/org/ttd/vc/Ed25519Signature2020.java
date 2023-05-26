@@ -1,13 +1,10 @@
 package org.ttd.vc;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
+import com.google.gson.JsonObject;
 import io.ipfs.multibase.Multibase;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.ttd.vc.utils.JsonCanonicalizer;
-import org.ttd.vc.utils.LocalDateTimeSerializer;
 import org.ttd.vc.utils.VCUtil;
-
 
 import java.io.IOException;
 import java.net.URI;
@@ -59,12 +56,11 @@ public class Ed25519Signature2020 implements Proof {
 
     private String sign(Credential credential, CredentialMetaData credentialMetaData, PrivateKey privateKey)
             throws NoSuchAlgorithmException, InvalidKeyException, SignatureException, IOException {
-//        JSONObject jsonRepresentation = VCUtil.getJsonRepresentation(credential);
-//        jsonRepresentation.remove(Constants.PROOF);
 
-
-        String s = VCUtil.gson.toJson(credentialMetaData);
-        String encodedString = new JsonCanonicalizer(credential.toJson().toString()).getEncodedString();
+        JsonObject signingContent = new JsonObject();
+        signingContent.add("metadata", VCUtil.gson.toJsonTree(credentialMetaData));
+        signingContent.add("credential", credential.toJson());
+        String encodedString = new JsonCanonicalizer(signingContent.toString()).getEncodedString();
 
         Signature signature = Signature.getInstance("Ed25519");
         signature.initSign(privateKey);
