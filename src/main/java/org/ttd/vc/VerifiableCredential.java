@@ -52,7 +52,7 @@ public class VerifiableCredential {
         }
 
         public VerifiableCredential build() {
-            if (credentialMetaData == null || credential == null || proofs.isEmpty())
+            if (credentialMetaData == null || credential == null)
                 throw new RuntimeException("Metadata, credential and proofs cannot be null or empty");
             return new VerifiableCredential(credentialMetaData, credential, proofs);
         }
