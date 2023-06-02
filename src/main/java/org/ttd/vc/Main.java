@@ -1,5 +1,6 @@
 package org.ttd.vc;
 
+import com.auth0.jwt.algorithms.Algorithm;
 import com.google.gson.JsonObject;
 import org.bouncycastle.crypto.prng.FixedSecureRandom;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
@@ -9,6 +10,8 @@ import org.ttd.vc.utils.VCUtil;
 import java.io.IOException;
 import java.net.URI;
 import java.security.*;
+import java.security.interfaces.ECPrivateKey;
+import java.security.interfaces.ECPublicKey;
 import java.time.LocalDateTime;
 
 public class Main {
@@ -35,6 +38,21 @@ public class Main {
                 .expirationDate(dateTime.plusYears(1))
                 .build();
 
+        // Build a VC without embedded proof
+        VerifiableCredential vc = new VerifiableCredential.Builder()
+                .credential(credential)
+                .metadata(credentialMetaData)
+                .build();
+
+        KeyPairGenerator keyGenerator = KeyPairGenerator.getInstance("EC");
+        KeyPair keyPair2 = keyGenerator.generateKeyPair();
+        Algorithm algorithm = Algorithm.ECDSA256((ECPublicKey) keyPair2.getPublic(), (ECPrivateKey) keyPair2.getPrivate());
+
+        // Generate an external proof for the VC (JWT)
+        String vcJwt = VCUtil.vcToJwT(vc, algorithm);
+        System.out.println(vcJwt);
+
+        // Generate an VC with embedded proof
         KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("Ed25519");
         byte[] keyBytesForSender = Mnemonic.toKey("sponsor ride say achieve senior height crumble promote " +
                 "universe write dove bomb faculty side human taste paper grocery robot grab reason fork soul above " +
@@ -44,12 +62,13 @@ public class Main {
         Proof proof = new Ed25519Signature2020(dateTime, credential, credentialMetaData, URI.create("linkToPublicKey"),
                 "assertion", keyPair.getPrivate());
 
-        VerifiableCredential verifiableCredential = new VerifiableCredential.Builder()
+        VerifiableCredential vcWithEmbeddedProof = new VerifiableCredential.Builder()
                 .credential(credential)
                 .metadata(credentialMetaData)
                 .proof(proof)
                 .build();
-        JsonObject jsonRepresentation = VCUtil.getJsonRepresentation(verifiableCredential);
+
+        JsonObject jsonRepresentation = VCUtil.getJsonRepresentation(vcWithEmbeddedProof);
         System.out.println(jsonRepresentation);
 
     }
