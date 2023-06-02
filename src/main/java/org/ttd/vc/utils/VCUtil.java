@@ -1,6 +1,9 @@
 package org.ttd.vc.utils;
 
 
+import com.auth0.jwt.JWT;
+import com.auth0.jwt.JWTCreator;
+import com.auth0.jwt.algorithms.Algorithm;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
@@ -9,6 +12,7 @@ import org.ttd.vc.*;
 
 import java.net.URI;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.List;
 
 public class VCUtil {
@@ -50,5 +54,22 @@ public class VCUtil {
         vc.add(Constants.PROOF, gson.toJsonTree((proofs)));
 
         return vc;
+    }
+
+
+    public static String vcToJwT(VerifiableCredential verifiableCredential, Algorithm hashAlgorithm) {
+        JsonObject jsonRepresentation = getJsonRepresentation(verifiableCredential);
+        jsonRepresentation.remove(Constants.PROOF);
+        JsonObject jsonObject = new JsonObject();
+        jsonObject.add("VC", jsonRepresentation);
+
+        JWTCreator.Builder builder = JWT.create();
+        builder.withPayload(jsonObject.toString());
+
+        CredentialMetaData credentialMetaData = verifiableCredential.getCredentialMetaData();
+        builder.withIssuer(credentialMetaData.getIssuer().toString());
+        builder.withIssuedAt(credentialMetaData.getIssuanceDate().toInstant(ZoneOffset.UTC));
+        builder.withExpiresAt(credentialMetaData.getExpirationDate().toInstant(ZoneOffset.UTC));
+        return builder.sign(hashAlgorithm);
     }
 }
