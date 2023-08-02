@@ -9,7 +9,10 @@ import org.ttd.vc.utils.VCUtil;
 
 import java.io.IOException;
 import java.net.URI;
-import java.security.*;
+import java.security.GeneralSecurityException;
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
+import java.security.Security;
 import java.security.interfaces.ECPrivateKey;
 import java.security.interfaces.ECPublicKey;
 import java.time.LocalDateTime;
@@ -44,13 +47,17 @@ public class Main {
                 .metadata(credentialMetaData)
                 .build();
 
-        KeyPairGenerator keyGenerator = KeyPairGenerator.getInstance("EC");
+        KeyPairGenerator keyGenerator = KeyPairGenerator.getInstance("ECDSA", "BC");
         KeyPair keyPair2 = keyGenerator.generateKeyPair();
-        Algorithm algorithm = Algorithm.ECDSA256((ECPublicKey) keyPair2.getPublic(), (ECPrivateKey) keyPair2.getPrivate());
+        Algorithm algorithm = Algorithm.ECDSA256(null, (ECPrivateKey) keyPair2.getPrivate());
 
         // Generate an external proof for the VC (JWT)
         String vcJwt = VCUtil.vcToJwT(vc, algorithm);
         System.out.println(vcJwt);
+
+        // Verify the JWT
+        Verifier.verify(vcJwt, Algorithm.ECDSA256((ECPublicKey) keyPair2.getPublic(), null));
+        System.out.println("JWT verification success");
 
         // Generate an VC with embedded proof
         KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("Ed25519");
@@ -70,6 +77,5 @@ public class Main {
 
         JsonObject jsonRepresentation = VCUtil.getJsonRepresentation(vcWithEmbeddedProof);
         System.out.println(jsonRepresentation);
-
     }
 }
